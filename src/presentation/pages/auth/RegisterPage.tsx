@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Store, User, Mail, Lock, Building2, ListFilter, Zap, BarChart3, Shield } from 'lucide-react';
+import { Store, User, Mail, Lock, Building2, ListFilter, Zap, BarChart3, Shield, Eye, EyeOff } from 'lucide-react';
 import { useAuthStore } from '@/infrastructure/auth/useAuthStore';
 import { BusinessType } from '@/core/domain/entities/User';
 import Button from '@/presentation/components/ui/Button';
@@ -50,6 +50,7 @@ export default function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [businessName, setBusinessName] = useState('');
   const [businessType, setBusinessType] = useState<BusinessType>(BusinessType.PANADERIA);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -91,16 +92,16 @@ export default function RegisterPage() {
         {/* Bottom glow line */}
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
 
-        <div className="relative z-10 text-center text-white px-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/15 mb-6">
+        <div className="relative z-10 flex flex-col items-center text-center text-white px-12">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/15 shadow-lg shadow-black/10 mb-6">
             <Store size={40} strokeWidth={1.5} />
           </div>
-          <h2 className="text-3xl font-bold">Metisia</h2>
-          <p className="text-white/60 mt-3 text-sm leading-relaxed max-w-[280px] mx-auto">
+          <h2 className="text-3xl font-extrabold tracking-tight">Metisia</h2>
+          <p className="text-white/55 mt-3 text-sm leading-relaxed max-w-[280px]">
             Crea tu cuenta y comienza a gestionar tu negocio hoy.
           </p>
 
-          <div className="mt-10 space-y-4 text-left">
+          <div className="mt-10 space-y-4">
             {features.map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-3">
                 <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
@@ -124,7 +125,7 @@ export default function RegisterPage() {
             <p className="text-sm text-neutral-400 mt-1">Registra tu negocio en Metisia</p>
           </div>
 
-          <div className="bg-white rounded-2xl border border-neutral-200/60 shadow-card p-8">
+          <div className="bg-white rounded-2xl border border-neutral-200 shadow-card p-8">
             {error && <div className="mb-5"><Alert type="error" message={error} onClose={clearError} /></div>}
 
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -156,8 +157,18 @@ export default function RegisterPage() {
               <div>
                 <Input
                   label="Contraseña"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   icon={<Lock size={18} />}
+                  suffix={
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      onClick={() => setShowPassword(p => !p)}
+                      className="text-neutral-400 hover:text-neutral-600 transition-colors cursor-pointer"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  }
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   onBlur={() => handleBlur('password')}
@@ -210,7 +221,7 @@ export default function RegisterPage() {
                 onChange={e => setBusinessType(e.target.value as BusinessType)}
               />
 
-              <Button type="submit" className="w-full h-11 text-[15px]" isLoading={isLoading}>
+              <Button type="submit" className="w-full h-12 text-[15px] shadow-md hover:shadow-lg" isLoading={isLoading}>
                 Crear Cuenta
               </Button>
             </form>

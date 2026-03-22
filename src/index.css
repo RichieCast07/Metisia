@@ -2,8 +2,8 @@
 
 @theme {
   /* Brand Colors — celeste y blanco */
-  --color-primary: #0EA5E9;       /* sky-500 — celeste */
-  --color-primary-dark: #0284C7;  /* sky-600 — hover/active */
+  --color-primary: #0ea5e9;       /* sky-500 — celeste */
+  --color-primary-dark: #0284c7;  /* sky-600 — hover/active */
   --color-secondary: #38BDF8;     /* sky-400 — complemento claro */
   --color-accent: #F97316;        /* naranja para acentos */
 
@@ -18,17 +18,17 @@
   --color-neutral-900: #0F172A;
 
   /* Semantic Colors */
-  --color-success: #16A34A;
-  --color-warning: #D97706;
-  --color-error: #DC2626;
-  --color-info: #0284C7;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #0284c7;
 
   /* Font */
   --font-sans: 'Inter', 'Segoe UI', sans-serif;
 
   /* Shadows */
-  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04);
-  --shadow-card-hover: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-card: 0 2px 8px -2px rgb(0 0 0 / 0.12), 0 1px 3px -1px rgb(0 0 0 / 0.06);
+  --shadow-card-hover: 0 8px 16px -4px rgb(0 0 0 / 0.12), 0 4px 6px -2px rgb(0 0 0 / 0.06);
   --shadow-modal: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 

@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Store, Mail, Lock, Zap, BarChart3, Shield } from 'lucide-react';
+import { Store, Mail, Lock, Zap, BarChart3, Shield, Eye, EyeOff } from 'lucide-react';
 import { useAuthStore } from '@/infrastructure/auth/useAuthStore';
 import Button from '@/presentation/components/ui/Button';
 import Input from '@/presentation/components/ui/Input';
@@ -20,6 +20,7 @@ const validators: Record<string, (v: string) => string> = {
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const { login, isLoading, error, clearError } = useAuthStore();
   const navigate = useNavigate();
@@ -59,11 +60,11 @@ export default function LoginPage() {
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
 
         <div className="relative z-10 text-center text-white px-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/15 mb-6">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/15 shadow-lg shadow-black/10 mb-6">
             <Store size={40} strokeWidth={1.5} />
           </div>
-          <h2 className="text-3xl font-bold">Metisia</h2>
-          <p className="text-white/60 mt-3 text-sm leading-relaxed max-w-[280px] mx-auto">
+          <h2 className="text-3xl font-extrabold tracking-tight">Metisia</h2>
+          <p className="text-white/55 mt-3 text-sm leading-relaxed max-w-[280px] mx-auto">
             Gestiona tu negocio de forma simple, rápida e inteligente.
           </p>
 
@@ -91,7 +92,7 @@ export default function LoginPage() {
             <p className="text-sm text-neutral-400 mt-1">Ingresa a tu cuenta para continuar</p>
           </div>
 
-          <div className="bg-white rounded-2xl border border-neutral-200/60 shadow-card p-8">
+          <div className="bg-white rounded-2xl border border-neutral-200 shadow-card p-8">
             {error && <div className="mb-5"><Alert type="error" message={error} onClose={clearError} /></div>}
 
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -109,8 +110,18 @@ export default function LoginPage() {
               />
               <Input
                 label="Contraseña"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 icon={<Lock size={18} />}
+                suffix={
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    onClick={() => setShowPassword(p => !p)}
+                    className="text-neutral-400 hover:text-neutral-600 transition-colors cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                }
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 onBlur={() => handleBlur('password')}
@@ -119,7 +130,7 @@ export default function LoginPage() {
                 required
                 placeholder="••••••••"
               />
-              <Button type="submit" className="w-full h-11 text-[15px]" isLoading={isLoading}>
+              <Button type="submit" className="w-full h-12 text-[15px] shadow-md hover:shadow-lg" isLoading={isLoading}>
                 Iniciar Sesión
               </Button>
             </form>
