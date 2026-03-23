@@ -40,9 +40,9 @@ export default function ProductsPage() {
               { key: 'status', header: 'Estado', render: (p: Product) => <Badge variant={p.isActive ? 'success' : 'error'}>{p.isActive ? 'Activo' : 'Inactivo'}</Badge> },
               { key: 'actions', header: '', render: (p: Product) => (
                 <div className="flex items-center gap-1">
-                  <button onClick={() => vm.toggleActive(p)} className="p-1.5 rounded-lg hover:bg-neutral-100 text-neutral-400 hover:text-neutral-600 cursor-pointer transition-colors" title="Activar/Desactivar"><Power size={15} /></button>
-                  <button onClick={() => vm.openEdit(p)} className="p-1.5 rounded-lg hover:bg-neutral-100 text-neutral-400 hover:text-neutral-600 cursor-pointer transition-colors"><Pencil size={15} /></button>
-                  <button onClick={() => setDeleteId(p.id)} className="p-1.5 rounded-lg hover:bg-error/5 text-neutral-400 hover:text-error cursor-pointer transition-colors"><Trash2 size={15} /></button>
+                  <button onClick={() => vm.toggleActive(p)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors" title="Activar/Desactivar"><Power size={15} /></button>
+                  <button onClick={() => vm.openEdit(p)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"><Pencil size={15} /></button>
+                  <button onClick={() => setDeleteId(p.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 cursor-pointer transition-colors"><Trash2 size={15} /></button>
                 </div>
               )},
             ]}

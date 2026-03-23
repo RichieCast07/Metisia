@@ -45,7 +45,7 @@ export default function PromotionsPage() {
   return (
     <>
       <Header title="Promociones" subtitle="Gestión de descuentos y ofertas" actions={<Button size="sm" onClick={() => setShowForm(true)}><Plus size={16} /> Nueva Promoción</Button>} />
-      <div className="p-8">
+      <div className="p-8 space-y-6">
         {promotions.length === 0 ? (
           <EmptyState title="Sin promociones" description="Crea promociones para atraer más clientes" action={<Button size="sm" onClick={() => setShowForm(true)}><Plus size={16} /> Crear promoción</Button>} />
         ) : (
@@ -61,8 +61,8 @@ export default function PromotionsPage() {
               { key: 'created', header: 'Creada', render: (p: Promotion) => format(new Date(p.createdAt), 'dd/MM/yyyy') },
               { key: 'actions', header: '', render: (p: Promotion) => (
                 <div className="flex items-center gap-1">
-                  <button onClick={() => handleToggle(p.id)} className="p-1.5 rounded-lg hover:bg-neutral-100 text-neutral-400 hover:text-neutral-600 cursor-pointer transition-colors"><Power size={15} /></button>
-                  <button onClick={() => setDeleteId(p.id)} className="p-1.5 rounded-lg hover:bg-error/5 text-neutral-400 hover:text-error cursor-pointer transition-colors"><Trash2 size={15} /></button>
+                  <button onClick={() => handleToggle(p.id)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"><Power size={15} /></button>
+                  <button onClick={() => setDeleteId(p.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 cursor-pointer transition-colors"><Trash2 size={15} /></button>
                 </div>
               )},
             ]}

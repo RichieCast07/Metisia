@@ -54,7 +54,7 @@ export default function ReportsPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
-            <h3 className="text-sm font-semibold text-neutral-900 mb-4">Ingresos vs Gastos</h3>
+            <h3 className="text-base font-bold text-slate-900 mb-5">Ingresos vs Gastos</h3>
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={[{ name: 'Período', ventas: profitReport.totalSales, gastos: profitReport.totalExpenses }]}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -68,26 +68,26 @@ export default function ReportsPage() {
           </Card>
 
           <Card>
-            <h3 className="text-sm font-semibold text-neutral-900 mb-4">Crecimiento de Ventas</h3>
+            <h3 className="text-base font-bold text-slate-900 mb-5">Crecimiento de Ventas</h3>
             <div className="grid grid-cols-2 gap-3">
-              <div className="text-center p-4 rounded-xl bg-neutral-50/80">
-                <p className="text-xs text-neutral-400 mb-1">Hoy</p>
-                <p className="text-lg font-bold text-neutral-900">{fmt(growth.today)}</p>
-                <p className={`text-xs mt-1 ${growth.growthPercentage.daily >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+              <div className="text-center p-5 rounded-2xl bg-slate-100 ring-1 ring-slate-200">
+                <p className="text-xs font-medium text-slate-500 mb-1">Hoy</p>
+                <p className="text-xl font-bold text-slate-900">{fmt(growth.today)}</p>
+                <p className={`text-xs mt-1 ${growth.growthPercentage.daily >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                   {growth.growthPercentage.daily >= 0 ? '+' : ''}{growth.growthPercentage.daily.toFixed(1)}% vs ayer
                 </p>
               </div>
-              <div className="text-center p-4 rounded-xl bg-neutral-50/80">
-                <p className="text-xs text-neutral-400 mb-1">Semana</p>
-                <p className="text-lg font-bold text-neutral-900">{fmt(growth.lastWeek)}</p>
-                <p className={`text-xs mt-1 ${growth.growthPercentage.weekly >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+              <div className="text-center p-5 rounded-2xl bg-slate-100 ring-1 ring-slate-200">
+                <p className="text-xs font-medium text-slate-500 mb-1">Semana</p>
+                <p className="text-xl font-bold text-slate-900">{fmt(growth.lastWeek)}</p>
+                <p className={`text-xs mt-1 ${growth.growthPercentage.weekly >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                   {growth.growthPercentage.weekly >= 0 ? '+' : ''}{growth.growthPercentage.weekly.toFixed(1)}% vs anterior
                 </p>
               </div>
-              <div className="text-center p-4 rounded-xl bg-neutral-50/80 col-span-2">
-                <p className="text-xs text-neutral-400 mb-1">Mes</p>
-                <p className="text-lg font-bold text-neutral-900">{fmt(growth.lastMonth)}</p>
-                <p className={`text-xs mt-1 ${growth.growthPercentage.monthly >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+              <div className="text-center p-5 rounded-2xl bg-slate-100 ring-1 ring-slate-200 col-span-2">
+                <p className="text-xs font-medium text-slate-500 mb-1">Mes</p>
+                <p className="text-xl font-bold text-slate-900">{fmt(growth.lastMonth)}</p>
+                <p className={`text-xs mt-1 ${growth.growthPercentage.monthly >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                   {growth.growthPercentage.monthly >= 0 ? '+' : ''}{growth.growthPercentage.monthly.toFixed(1)}% vs anterior
                 </p>
               </div>

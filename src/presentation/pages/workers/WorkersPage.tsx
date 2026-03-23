@@ -45,7 +45,7 @@ export default function WorkersPage() {
   return (
     <>
       <Header title="Trabajadores" subtitle="Gestión de personal" actions={<Button size="sm" onClick={() => setShowForm(true)}><Plus size={16} /> Nuevo Trabajador</Button>} />
-      <div className="p-8">
+      <div className="p-8 space-y-6">
         {workers.length === 0 ? (
           <EmptyState title="Sin trabajadores" description="Registra a tu equipo de trabajo" action={<Button size="sm" onClick={() => setShowForm(true)}><Plus size={16} /> Agregar</Button>} />
         ) : (
@@ -59,8 +59,8 @@ export default function WorkersPage() {
               { key: 'status', header: 'Estado', render: (w: Worker) => <Badge variant={w.isActive ? 'success' : 'error'}>{w.isActive ? 'Activo' : 'Inactivo'}</Badge> },
               { key: 'actions', header: '', render: (w: Worker) => (
                 <div className="flex items-center gap-1">
-                  <button onClick={() => setShowPayment(w)} className="p-1.5 rounded-lg hover:bg-neutral-100 text-neutral-400 hover:text-neutral-600 cursor-pointer transition-colors" title="Registrar pago"><DollarSign size={15} /></button>
-                  <button onClick={() => handleToggle(w.id)} className="p-1.5 rounded-lg hover:bg-neutral-100 text-neutral-400 hover:text-neutral-600 cursor-pointer transition-colors"><Power size={15} /></button>
+                  <button onClick={() => setShowPayment(w)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors" title="Registrar pago"><DollarSign size={15} /></button>
+                  <button onClick={() => handleToggle(w.id)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"><Power size={15} /></button>
                 </div>
               )},
             ]}

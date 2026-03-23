@@ -66,9 +66,9 @@ export default function ExpensesPage() {
               { key: 'date', header: 'Fecha', render: (e: Expense) => format(new Date(e.date), 'dd/MM/yyyy') },
               { key: 'description', header: 'Descripción', render: (e: Expense) => <span className="font-medium">{e.description}</span> },
               { key: 'category', header: 'Categoría', render: (e: Expense) => <Badge>{e.category}</Badge> },
-              { key: 'amount', header: 'Monto', render: (e: Expense) => <span className="font-semibold text-error">{fmt(e.amount)}</span> },
+              { key: 'amount', header: 'Monto', render: (e: Expense) => <span className="font-semibold text-red-500">{fmt(e.amount)}</span> },
               { key: 'actions', header: '', render: (e: Expense) => (
-                <button onClick={() => setDeleteId(e.id)} className="p-1.5 rounded-lg hover:bg-error/5 text-neutral-400 hover:text-error cursor-pointer transition-colors"><Trash2 size={15} /></button>
+                <button onClick={() => setDeleteId(e.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 cursor-pointer transition-colors"><Trash2 size={15} /></button>
               )},
             ]}
           />

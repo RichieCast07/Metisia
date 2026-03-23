@@ -46,7 +46,7 @@ export default function SalesPage() {
                 <div className="max-w-xs truncate">{s.items.map(i => `${i.productName} x${i.quantity}`).join(', ')}</div>
               )},
               { key: 'subtotal', header: 'Subtotal', render: (s: Sale) => fmt(s.subtotal) },
-              { key: 'discount', header: 'Descuento', render: (s: Sale) => s.discount > 0 ? <span className="text-error">-{fmt(s.discount)}</span> : '-' },
+              { key: 'discount', header: 'Descuento', render: (s: Sale) => s.discount > 0 ? <span className="text-red-500">-{fmt(s.discount)}</span> : '-' },
               { key: 'total', header: 'Total', render: (s: Sale) => <span className="font-semibold">{fmt(s.total)}</span> },
               { key: 'payment', header: 'Pago', render: (s: Sale) => <Badge variant="info">{s.paymentMethod}</Badge> },
             ]}

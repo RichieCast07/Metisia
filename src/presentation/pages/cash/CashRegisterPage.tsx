@@ -69,17 +69,17 @@ export default function CashRegisterPage() {
         {success && <Alert type="success" message={success} />}
 
         <Card>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <Landmark size={18} className="text-primary" />
+          <div className="flex items-center gap-3 mb-5">
+            <div className="p-2.5 bg-blue-50 rounded-xl ring-1 ring-blue-100">
+              <Landmark size={18} className="text-blue-600" />
             </div>
-            <h2 className="text-sm font-semibold text-neutral-900">Estado Actual</h2>
+            <h2 className="text-base font-bold text-slate-900">Estado Actual</h2>
           </div>
           {current ? (
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <Badge variant="success">Abierta</Badge>
-                <span className="text-sm text-neutral-500">
+                <span className="text-sm text-slate-500">
                   Apertura: {format(new Date(current.openedAt), 'dd/MM/yyyy HH:mm')} — Monto inicial: {fmt(current.openingAmount)}
                 </span>
               </div>
@@ -87,7 +87,7 @@ export default function CashRegisterPage() {
             </div>
           ) : (
             <form onSubmit={handleOpen} className="space-y-4">
-              <p className="text-sm text-neutral-500">La caja está cerrada. Ábrela para empezar a registrar ventas.</p>
+              <p className="text-sm text-slate-500">La caja está cerrada. Ábrela para empezar a registrar ventas.</p>
               <Input label="Monto de apertura" type="number" step="0.01" min="0" value={openAmount} onChange={e => setOpenAmount(e.target.value)} required placeholder="0.00" />
               <Button type="submit"><LockOpen size={16} /> Abrir Caja</Button>
             </form>
@@ -95,9 +95,9 @@ export default function CashRegisterPage() {
         </Card>
 
         <Card>
-          <h2 className="text-sm font-semibold text-neutral-900 mb-4">Historial de Cortes</h2>
+          <h2 className="text-base font-bold text-slate-900 mb-5">Historial de Cortes</h2>
           {history.length === 0 ? (
-            <p className="text-sm text-neutral-500">Sin cortes registrados</p>
+            <p className="text-sm text-slate-500">Sin cortes registrados</p>
           ) : (
             <DataTable
               data={history}

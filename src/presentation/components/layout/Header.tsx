@@ -11,21 +11,23 @@ export default function Header({ title, subtitle, actions }: HeaderProps) {
   const { user } = useAuthStore();
 
   return (
-    <header className="h-[64px] bg-white/80 backdrop-blur-md border-b border-neutral-100 flex items-center justify-between px-8 sticky top-0 z-30">
-      <div>
-        <h1 className="text-lg font-bold text-neutral-900 tracking-tight">{title}</h1>
-        {subtitle && <p className="text-xs text-neutral-400 mt-0.5">{subtitle}</p>}
-      </div>
-      <div className="flex items-center gap-3">
-        {actions}
-        <button className="relative p-2 rounded-xl hover:bg-neutral-100 text-neutral-400 hover:text-neutral-600 transition-colors cursor-pointer">
-          <Bell size={18} />
-        </button>
-        <div className="flex items-center gap-2.5 pl-3 border-l border-neutral-100">
-          <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-            {user?.name.charAt(0).toUpperCase()}
+    <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+      <div className="flex items-center justify-between px-8 py-5">
+        <div>
+          <h1 className="text-xl font-extrabold tracking-tight text-slate-900">{title}</h1>
+          {subtitle && <p className="text-sm text-slate-500 mt-1">{subtitle}</p>}
+        </div>
+        <div className="flex items-center gap-4">
+          {actions}
+          <button className="relative p-2.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer border border-transparent hover:border-slate-200">
+            <Bell size={18} />
+          </button>
+          <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
+              {user?.name.charAt(0).toUpperCase()}
+            </div>
+            <span className="text-sm font-semibold text-slate-700 hidden md:block">{user?.name}</span>
           </div>
-          <span className="text-sm font-medium text-neutral-600 hidden md:block">{user?.name}</span>
         </div>
       </div>
     </header>

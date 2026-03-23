@@ -1,35 +1,57 @@
 @import "tailwindcss";
 
 @theme {
-  /* Brand Colors — celeste y blanco */
-  --color-primary: #0ea5e9;       /* sky-500 — celeste */
-  --color-primary-dark: #0284c7;  /* sky-600 — hover/active */
-  --color-secondary: #38BDF8;     /* sky-400 — complemento claro */
-  --color-accent: #F97316;        /* naranja para acentos */
+  /* Brand */
+  --color-primary: #2563EB;
+  --color-primary-dark: #1D4ED8;
+  --color-primary-light: #DBEAFE;
+  --color-secondary: #6366F1;
+  --color-accent: #F59E0B;
 
-  /* Neutrals */
-  --color-neutral-50: #F8FAFC;
-  --color-neutral-100: #F1F5F9;
-  --color-neutral-200: #E2E8F0;
-  --color-neutral-300: #CBD5E1;
-  --color-neutral-400: #94A3B8;
-  --color-neutral-500: #64748B;
-  --color-neutral-700: #334155;
-  --color-neutral-900: #0F172A;
+  /* Semantic */
+  --color-success: #16a34a;
+  --color-success-dark: #15803d;
+  --color-warning: #d97706;
+  --color-warning-dark: #b45309;
+  --color-error: #dc2626;
+  --color-error-dark: #b91c1c;
+  --color-info: #2563EB;
 
-  /* Semantic Colors */
-  --color-success: #22c55e;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
-  --color-info: #0284c7;
+  /* Surface & text tokens */
+  --color-surface: #ffffff;
+  --color-surface-secondary: #f1f5f9;
+  --color-surface-hover: #e2e8f0;
+  --color-border: #cbd5e1;
+  --color-border-light: #e2e8f0;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-muted: #64748b;
 
   /* Font */
-  --font-sans: 'Inter', 'Segoe UI', sans-serif;
+  --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
 
-  /* Shadows */
-  --shadow-card: 0 2px 8px -2px rgb(0 0 0 / 0.12), 0 1px 3px -1px rgb(0 0 0 / 0.06);
-  --shadow-card-hover: 0 8px 16px -4px rgb(0 0 0 / 0.12), 0 4px 6px -2px rgb(0 0 0 / 0.06);
-  --shadow-modal: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  /* Shadows – actually visible depth */
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.06), 0 1px 3px rgb(0 0 0 / 0.04);
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 0.08), 0 2px 8px rgb(0 0 0 / 0.06);
+  --shadow-elevated: 0 4px 12px rgb(0 0 0 / 0.1), 0 2px 4px rgb(0 0 0 / 0.06);
+  --shadow-card-hover: 0 8px 24px rgb(0 0 0 / 0.12), 0 4px 8px rgb(0 0 0 / 0.06);
+  --shadow-modal: 0 24px 48px -12px rgb(0 0 0 / 0.3), 0 0 0 1px rgb(0 0 0 / 0.05);
+}
+
+/* Keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Base styles */
@@ -41,11 +63,13 @@
 
 body {
   font-family: var(--font-sans);
-  color: var(--color-neutral-900);
-  background-color: var(--color-neutral-50);
+  color: var(--color-text-primary);
+  background-color: var(--color-surface-secondary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  letter-spacing: -0.01em;
 }
 
 *:focus-visible {
@@ -53,11 +77,18 @@ body {
   outline-offset: 2px;
 }
 
-/* Smooth transitions globally */
 button, a, input, select, textarea {
   transition: all 0.15s ease;
 }
 
+/* Card surfaces — ensure white pops against the bg */
+.card-surface {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.08), 0 2px 8px rgb(0 0 0 / 0.06);
+}
+
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -68,11 +99,11 @@ button, a, input, select, textarea {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-neutral-300);
+  background: #94a3b8;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-neutral-400);
+  background: #64748b;
 }
 

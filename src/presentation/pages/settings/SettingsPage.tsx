@@ -60,34 +60,34 @@ export default function SettingsPage() {
         {success && <Alert type="success" message={success} />}
 
         <Card>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <User size={18} className="text-primary" />
+          <div className="flex items-center gap-3 mb-5">
+            <div className="p-2.5 bg-blue-50 rounded-xl ring-1 ring-blue-100">
+              <User size={18} className="text-blue-600" />
             </div>
-            <h2 className="text-sm font-semibold text-neutral-900">Información de la Cuenta</h2>
+            <h2 className="text-base font-bold text-slate-900">Información de la Cuenta</h2>
           </div>
           <div className="space-y-3 text-sm">
-            <div className="flex justify-between py-2 border-b border-neutral-100">
-              <span className="text-neutral-500">Nombre</span>
-              <span className="font-medium text-neutral-900">{user?.name}</span>
+            <div className="flex justify-between py-2.5 border-b border-slate-100">
+              <span className="text-slate-500">Nombre</span>
+              <span className="font-medium text-slate-900">{user?.name}</span>
             </div>
-            <div className="flex justify-between py-2 border-b border-neutral-100">
-              <span className="text-neutral-500">Correo</span>
-              <span className="font-medium text-neutral-900">{user?.email}</span>
+            <div className="flex justify-between py-2.5 border-b border-slate-100">
+              <span className="text-slate-500">Correo</span>
+              <span className="font-medium text-slate-900">{user?.email}</span>
             </div>
-            <div className="flex justify-between py-2 border-b border-neutral-100">
-              <span className="text-neutral-500">Negocio</span>
-              <span className="font-medium text-neutral-900">{user?.businessName}</span>
+            <div className="flex justify-between py-2.5 border-b border-slate-100">
+              <span className="text-slate-500">Negocio</span>
+              <span className="font-medium text-slate-900">{user?.businessName}</span>
             </div>
             <div className="flex justify-between py-2">
-              <span className="text-neutral-500">Plan</span>
-              <span className="font-medium text-neutral-900 capitalize">{user?.plan}</span>
+              <span className="text-slate-500">Plan</span>
+              <span className="font-medium text-slate-900 capitalize">{user?.plan}</span>
             </div>
           </div>
         </Card>
 
         <Card>
-          <h2 className="text-sm font-semibold text-neutral-900 mb-4">Gestión de Datos</h2>
+          <h2 className="text-base font-bold text-slate-900 mb-5">Gestión de Datos</h2>
           <div className="space-y-3">
             <Button variant="outline" onClick={handleExport} className="w-full justify-start">
               <Download size={16} /> Exportar datos (JSON)

@@ -40,9 +40,9 @@ export default function IngredientsPage() {
               { key: 'cost', header: 'Costo/u', render: (i: Ingredient) => `$${i.unitCost.toFixed(2)}` },
               { key: 'actions', header: '', render: (i: Ingredient) => (
                 <div className="flex items-center gap-1">
-                  <button onClick={() => vm.setShowAdjust(i)} className="p-1.5 rounded-lg hover:bg-neutral-100 text-neutral-400 hover:text-neutral-600 cursor-pointer transition-colors" title="Ajustar stock"><ArrowUpDown size={15} /></button>
-                  <button onClick={() => vm.openEdit(i)} className="p-1.5 rounded-lg hover:bg-neutral-100 text-neutral-400 hover:text-neutral-600 cursor-pointer transition-colors"><Pencil size={15} /></button>
-                  <button onClick={() => setDeleteId(i.id)} className="p-1.5 rounded-lg hover:bg-error/5 text-neutral-400 hover:text-error cursor-pointer transition-colors"><Trash2 size={15} /></button>
+                  <button onClick={() => vm.setShowAdjust(i)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors" title="Ajustar stock"><ArrowUpDown size={15} /></button>
+                  <button onClick={() => vm.openEdit(i)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"><Pencil size={15} /></button>
+                  <button onClick={() => setDeleteId(i.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 cursor-pointer transition-colors"><Trash2 size={15} /></button>
                 </div>
               )},
             ]}
@@ -119,7 +119,7 @@ function AdjustStockModal({ ingredient, onClose, onAdjust }: {
 
   return (
     <Modal isOpen onClose={onClose} title={`Ajustar stock: ${ingredient.name}`} size="sm">
-      <p className="text-sm text-neutral-500 mb-4">Stock actual: {ingredient.stock} {ingredient.unit}</p>
+      <p className="text-sm text-slate-500 mb-4">Stock actual: {ingredient.stock} {ingredient.unit}</p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input label="Cantidad (positivo = entrada, negativo = salida)" type="number" step="0.01" value={quantity} onChange={e => setQuantity(e.target.value)} required />
         <Input label="Motivo" value={reason} onChange={e => setReason(e.target.value)} required placeholder="Ej: Compra, Merma, Corrección" />

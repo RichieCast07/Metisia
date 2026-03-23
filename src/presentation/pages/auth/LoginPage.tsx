@@ -43,38 +43,37 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left — branding panel */}
-      <div className="hidden lg:flex lg:w-[480px] bg-gradient-to-br from-primary to-primary-dark relative overflow-hidden flex-col items-center justify-center">
-        {/* Dot pattern */}
+      <div className="hidden lg:flex lg:w-[480px] bg-gradient-to-br from-slate-900 to-slate-800 relative overflow-hidden flex-col items-center justify-center">
+        {/* Grid pattern */}
         <div
-          className="absolute inset-0 opacity-[0.07]"
+          className="absolute inset-0 opacity-[0.03]"
           style={{
-            backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-            backgroundSize: '24px 24px',
+            backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)',
+            backgroundSize: '32px 32px',
           }}
         />
-        {/* Decorative circles */}
-        <div className="absolute -top-24 -left-24 w-80 h-80 bg-white/10 rounded-full blur-xl" />
-        <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-white/10 rounded-full blur-xl" />
-        <div className="absolute top-1/3 right-0 w-48 h-48 bg-white/5 rounded-full blur-lg" />
-        {/* Bottom glow line */}
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+        {/* Decorative blurs */}
+        <div className="absolute -top-20 -left-20 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-28 -right-28 w-80 h-80 bg-blue-400/8 rounded-full blur-3xl" />
+        {/* Bottom glow */}
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
         <div className="relative z-10 text-center text-white px-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/15 shadow-lg shadow-black/10 mb-6">
-            <Store size={40} strokeWidth={1.5} />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 mb-6 shadow-lg">
+            <Store size={32} strokeWidth={1.5} />
           </div>
-          <h2 className="text-3xl font-extrabold tracking-tight">Metisia</h2>
-          <p className="text-white/55 mt-3 text-sm leading-relaxed max-w-[280px] mx-auto">
+          <h2 className="text-2xl font-bold tracking-tight">Metisia</h2>
+          <p className="text-white/40 mt-2 text-sm leading-relaxed max-w-[260px] mx-auto">
             Gestiona tu negocio de forma simple, rápida e inteligente.
           </p>
 
-          <div className="mt-10 space-y-4 text-left">
+          <div className="mt-10 space-y-3.5 text-left">
             {features.map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-3">
-                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                  <Icon size={16} />
+                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white/8 flex items-center justify-center">
+                  <Icon size={15} className="text-white/70" />
                 </div>
-                <span className="text-sm text-white/80">{text}</span>
+                <span className="text-sm text-white/60 font-medium">{text}</span>
               </div>
             ))}
           </div>
@@ -82,17 +81,17 @@ export default function LoginPage() {
       </div>
 
       {/* Right — form */}
-      <div className="flex-1 flex items-center justify-center px-6 py-8 bg-neutral-50">
+      <div className="flex-1 flex items-center justify-center px-6 py-8 bg-slate-50">
         <div className="w-full max-w-md">
           <div className="flex flex-col items-center mb-8 lg:items-start">
-            <div className="lg:hidden p-3 bg-primary/10 rounded-xl mb-3">
-              <Store size={28} className="text-primary" />
+            <div className="lg:hidden p-3 bg-blue-50 rounded-xl ring-1 ring-blue-100 mb-4">
+              <Store size={24} className="text-blue-600" />
             </div>
-            <h1 className="text-2xl font-bold text-neutral-900">Bienvenido de vuelta</h1>
-            <p className="text-sm text-neutral-400 mt-1">Ingresa a tu cuenta para continuar</p>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">Bienvenido de vuelta</h1>
+            <p className="text-sm text-slate-500 mt-2">Ingresa a tu cuenta para continuar</p>
           </div>
 
-          <div className="bg-white rounded-2xl border border-neutral-200 shadow-card p-8">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-card p-8">
             {error && <div className="mb-5"><Alert type="error" message={error} onClose={clearError} /></div>}
 
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -117,7 +116,7 @@ export default function LoginPage() {
                     type="button"
                     tabIndex={-1}
                     onClick={() => setShowPassword(p => !p)}
-                    className="text-neutral-400 hover:text-neutral-600 transition-colors cursor-pointer"
+                    className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -130,15 +129,15 @@ export default function LoginPage() {
                 required
                 placeholder="••••••••"
               />
-              <Button type="submit" className="w-full h-12 text-[15px] shadow-md hover:shadow-lg" isLoading={isLoading}>
+              <Button type="submit" className="w-full h-11 text-sm" isLoading={isLoading}>
                 Iniciar Sesión
               </Button>
             </form>
           </div>
 
-          <p className="text-sm text-center text-neutral-400 mt-6">
+          <p className="text-sm text-center text-slate-500 mt-6">
             ¿No tienes cuenta?{' '}
-            <Link to="/register" className="text-primary font-semibold hover:underline">Regístrate aquí</Link>
+            <Link to="/register" className="text-blue-600 font-medium hover:underline">Regístrate aquí</Link>
           </p>
         </div>
       </div>
