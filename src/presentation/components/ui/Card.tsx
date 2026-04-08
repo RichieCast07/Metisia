@@ -1,15 +1,16 @@
-import { ReactNode } from 'react';
+import React, { ReactNode } from "react";
+import "./Card.css";
 
 interface CardProps {
+  title: string;
   children: ReactNode;
-  className?: string;
-  padding?: boolean;
 }
 
-export default function Card({ children, className = '', padding = true }: CardProps) {
+export default function Card({ title, children }: CardProps) {
   return (
-    <div className={`bg-white rounded-2xl border border-slate-200 shadow-card ${padding ? 'p-6' : ''} ${className}`}>
-      {children}
+    <div className="card-root">
+      <div className="card-title">{title}</div>
+      <div className="card-content">{children}</div>
     </div>
   );
 }
