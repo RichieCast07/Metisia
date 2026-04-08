@@ -1,51 +1,91 @@
-import { useState, useCallback, useMemo } from 'react';
-import { useAuthStore } from '@/infrastructure/auth/useAuthStore';
-import { Product } from '@/core/domain/entities/Product';
-import { createProduct, updateProduct, deleteProduct } from '@/core/domain/usecases/productUseCases';
-import { LocalStorageProductRepository } from '@/infrastructure/repositories/LocalStorageProductRepository';
-
-const repo = new LocalStorageProductRepository();
+import { useState, useCallback, useEffect } from 'react';
+import { productApi, ApiProduct } from '@/infrastructure/api/productApi';
 
 export function useProductsViewModel() {
-  const user = useAuthStore(s => s.user);
-  const businessId = user?.id ?? '';
+  const [products, setProducts] = useState<ApiProduct[]>([]);
   const [search, setSearch] = useState('');
-  const [editing, setEditing] = useState<Product | null>(null);
+  const [editing, setEditing] = useState<ApiProduct | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [refresh, setRefresh] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const products = useMemo(() => repo.getAll(businessId), [businessId, refresh]);
-
-  const filtered = useMemo(() => {
-    if (!search.trim()) return products;
-    const q = search.toLowerCase();
-    return products.filter(p => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q));
-  }, [products, search]);
-
-  const save = useCallback((data: { name: string; category: string; price: number; isActive: boolean }) => {
-    if (editing) {
-      updateProduct(repo, editing.id, data);
-    } else {
-      createProduct(repo, { ...data, businessId });
+  const load = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await productApi.list();
+      setProducts(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al cargar productos');
+    } finally {
+      setIsLoading(false);
     }
-    setShowForm(false);
-    setEditing(null);
-    setRefresh(r => r + 1);
-  }, [editing, businessId]);
-
-  const remove = useCallback((id: string) => {
-    deleteProduct(repo, id);
-    setRefresh(r => r + 1);
   }, []);
 
-  const toggleActive = useCallback((product: Product) => {
-    updateProduct(repo, product.id, { isActive: !product.isActive });
-    setRefresh(r => r + 1);
-  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  const filtered = search.trim()
+    ? products.filter(p =>
+        p.name.toLowerCase().includes(search.toLowerCase()) ||
+        p.category.toLowerCase().includes(search.toLowerCase())
+      )
+    : products;
+
+  const save = useCallback(async (data: {
+    name: string;
+    category: string;
+    price: number;
+    is_active: boolean;
+    description?: string;
+  }) => {
+    try {
+      if (editing) {
+        await productApi.update(editing.id, data);
+      } else {
+        await productApi.create(data);
+      }
+      setShowForm(false);
+      setEditing(null);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al guardar');
+    }
+  }, [editing, load]);
+
+  const remove = useCallback(async (id: string) => {
+    try {
+      await productApi.delete(id);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al eliminar');
+    }
+  }, [load]);
+
+  const toggleActive = useCallback(async (product: ApiProduct) => {
+    try {
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al actualizar');
+    }
+  }, [load]);
 
   const openCreate = useCallback(() => { setEditing(null); setShowForm(true); }, []);
-  const openEdit = useCallback((p: Product) => { setEditing(p); setShowForm(true); }, []);
+  const openEdit = useCallback((p: ApiProduct) => { setEditing(p); setShowForm(true); }, []);
   const closeForm = useCallback(() => { setShowForm(false); setEditing(null); }, []);
 
-  return { products: filtered, search, setSearch, editing, showForm, save, remove, toggleActive, openCreate, openEdit, closeForm };
+  return {
+    products: filtered,
+    search,
+    setSearch,
+    editing,
+    showForm,
+    isLoading,
+    error,
+    save,
+    remove,
+    toggleActive,
+    openCreate,
+    openEdit,
+    closeForm,
+  };
 }

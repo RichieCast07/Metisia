@@ -1,15 +1,18 @@
 import { create } from 'zustand';
-import { User, AuthSession, BusinessType, Plan } from '@/core/domain/entities/User';
-import { LocalStorageUserRepository, LocalStorageAuthSessionRepository } from '@/infrastructure/auth/AuthRepository';
-import { hashPassword } from '@/infrastructure/auth/hashPassword';
-import { DuplicateEmailError, InvalidCredentialsError } from '@/core/shared/errors';
-import { v4 as uuidv4 } from 'uuid';
+import { authApi } from '@/infrastructure/api/authApi';
+import { setAuthToken } from '@/infrastructure/api/apiClient';
 
-const userRepo = new LocalStorageUserRepository();
-const sessionRepo = new LocalStorageAuthSessionRepository();
+interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  business_name: string;
+  business_type: string;
+  plan: string;
+}
 
 interface AuthState {
-  user: User | null;
+  user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -18,11 +21,11 @@ interface AuthState {
     email: string;
     password: string;
     businessName: string;
-    businessType: BusinessType;
+    businessType: string;
   }) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  restoreSession: () => void;
+  restoreSession: () => Promise<void>;
   clearError: () => void;
 }
 
@@ -35,68 +38,41 @@ export const useAuthStore = create<AuthState>((set) => ({
   register: async ({ name, email, password, businessName, businessType }) => {
     set({ isLoading: true, error: null });
     try {
-      const existing = userRepo.findByEmail(email);
-      if (existing) throw new DuplicateEmailError();
-
-      const passwordHash = await hashPassword(password);
-      const user = userRepo.create({
+      const { access_token } = await authApi.register({
         name,
         email,
-        passwordHash,
-        businessName,
-        businessType,
-        plan: Plan.BASICO,
+        password,
+        business_name: businessName,
+        business_type: businessType,
       });
-
-      const session: AuthSession = {
-        userId: user.id,
-        token: uuidv4(),
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      };
-      sessionRepo.create(session);
+      setAuthToken(access_token);
+      const user = await authApi.me();
       set({ user, isAuthenticated: true, isLoading: false });
     } catch (err) {
-      set({ isLoading: false, error: err instanceof Error ? err.message : 'Error desconocido' });
+      set({ isLoading: false, error: err instanceof Error ? err.message : 'Error al registrar' });
     }
   },
 
   login: async (email, password) => {
     set({ isLoading: true, error: null });
     try {
-      const user = userRepo.findByEmail(email);
-      if (!user) throw new InvalidCredentialsError();
-
-      const hash = await hashPassword(password);
-      if (hash !== user.passwordHash) throw new InvalidCredentialsError();
-
-      userRepo.update(user.id, { lastLoginAt: new Date() });
-
-      const session: AuthSession = {
-        userId: user.id,
-        token: uuidv4(),
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      };
-      sessionRepo.create(session);
-      set({ user: { ...user, lastLoginAt: new Date() }, isAuthenticated: true, isLoading: false });
+      const { access_token } = await authApi.login(email, password);
+      setAuthToken(access_token);
+      const user = await authApi.me();
+      set({ user, isAuthenticated: true, isLoading: false });
     } catch (err) {
-      set({ isLoading: false, error: err instanceof Error ? err.message : 'Error desconocido' });
+      set({ isLoading: false, error: err instanceof Error ? err.message : 'Credenciales invalidas' });
     }
   },
 
   logout: () => {
-    sessionRepo.clear();
+    setAuthToken(null);
     set({ user: null, isAuthenticated: false, error: null });
   },
 
-  restoreSession: () => {
-    const session = sessionRepo.getCurrent();
-    if (!session) return;
-    const user = userRepo.findById(session.userId);
-    if (user) {
-      set({ user, isAuthenticated: true });
-    } else {
-      sessionRepo.clear();
-    }
+  restoreSession: async () => {
+    // No persistent token storage - session ends on page refresh by design.
+    // If a token were persisted (e.g. sessionStorage), it would be rehydrated here.
   },
 
   clearError: () => set({ error: null }),

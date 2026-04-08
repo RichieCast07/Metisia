@@ -1,57 +1,75 @@
-import { useState, useCallback, useMemo } from 'react';
-import { useAuthStore } from '@/infrastructure/auth/useAuthStore';
-import { Ingredient, IngredientUnit } from '@/core/domain/entities/Ingredient';
-import { createIngredient, updateIngredient, adjustStock } from '@/core/domain/usecases/ingredientUseCases';
-import { LocalStorageIngredientRepository } from '@/infrastructure/repositories/LocalStorageIngredientRepository';
-import { LocalStorageIngredientMovementRepository } from '@/infrastructure/repositories/LocalStorageIngredientMovementRepository';
-
-const repo = new LocalStorageIngredientRepository();
-const movementRepo = new LocalStorageIngredientMovementRepository();
+import { useState, useCallback, useEffect } from 'react';
+import { ingredientApi, ApiIngredient } from '@/infrastructure/api/ingredientApi';
 
 export function useIngredientsViewModel() {
-  const user = useAuthStore(s => s.user);
-  const businessId = user?.id ?? '';
+  const [ingredients, setIngredients] = useState<ApiIngredient[]>([]);
   const [search, setSearch] = useState('');
-  const [editing, setEditing] = useState<Ingredient | null>(null);
+  const [editing, setEditing] = useState<ApiIngredient | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [showAdjust, setShowAdjust] = useState<Ingredient | null>(null);
-  const [refresh, setRefresh] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const ingredients = useMemo(() => repo.getAll(businessId), [businessId, refresh]);
-
-  const filtered = useMemo(() => {
-    if (!search.trim()) return ingredients;
-    const q = search.toLowerCase();
-    return ingredients.filter(i => i.name.toLowerCase().includes(q));
-  }, [ingredients, search]);
-
-  const save = useCallback((data: { name: string; unit: IngredientUnit; stock: number; minStock: number; unitCost: number }) => {
-    if (editing) {
-      updateIngredient(repo, editing.id, data);
-    } else {
-      createIngredient(repo, { ...data, businessId });
+  const load = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await ingredientApi.list();
+      setIngredients(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al cargar ingredientes');
+    } finally {
+      setIsLoading(false);
     }
-    setShowForm(false);
-    setEditing(null);
-    setRefresh(r => r + 1);
-  }, [editing, businessId]);
-
-  const remove = useCallback((_id: string) => {
-    // Ingredient delete not supported via use case; could add if needed
-    setRefresh(r => r + 1);
   }, []);
 
-  const doAdjust = useCallback((ingredientId: string, quantity: number, reason: string) => {
-    adjustStock(repo, movementRepo, ingredientId, Math.abs(quantity), reason, businessId);
-    setShowAdjust(null);
-    setRefresh(r => r + 1);
-  }, [businessId]);
+  useEffect(() => { load(); }, [load]);
+
+  const filtered = search.trim()
+    ? ingredients.filter(i =>
+        i.name.toLowerCase().includes(search.toLowerCase())
+      )
+    : ingredients;
+
+  const save = useCallback(async (data: Omit<ApiIngredient, 'id' | 'business_id' | 'updated_at'>) => {
+    try {
+      if (editing) {
+        await ingredientApi.update(editing.id, data);
+      } else {
+        await ingredientApi.create(data);
+      }
+      setShowForm(false);
+      setEditing(null);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al guardar');
+    }
+  }, [editing, load]);
+
+  const remove = useCallback(async (id: string) => {
+    try {
+      await ingredientApi.delete(id);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al eliminar');
+    }
+  }, [load]);
+
+  const openCreate = useCallback(() => { setEditing(null); setShowForm(true); }, []);
+  const openEdit = useCallback((i: ApiIngredient) => { setEditing(i); setShowForm(true); }, []);
+  const closeForm = useCallback(() => { setShowForm(false); setEditing(null); }, []);
 
   return {
-    ingredients: filtered, search, setSearch, editing, showForm, showAdjust, setShowAdjust,
-    save, remove, doAdjust,
-    openCreate: () => { setEditing(null); setShowForm(true); },
-    openEdit: (i: Ingredient) => { setEditing(i); setShowForm(true); },
-    closeForm: () => { setShowForm(false); setEditing(null); },
+    ingredients: filtered,
+    search,
+    setSearch,
+    editing,
+    showForm,
+    isLoading,
+    error,
+    save,
+    remove,
+    openCreate,
+    openEdit,
+    closeForm,
   };
 }

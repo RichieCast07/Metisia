@@ -1,51 +1,58 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { productApi, ApiProduct } from '@/infrastructure/api/productApi';
+import { cashRegisterApi, ApiCashRegister } from '@/infrastructure/api/cashRegisterApi';
+import { saleApi, CreateSaleBody } from '@/infrastructure/api/saleApi';
 import { useAuthStore } from '@/infrastructure/auth/useAuthStore';
-import { Product } from '@/core/domain/entities/Product';
-import { PaymentMethod } from '@/core/domain/entities/Sale';
-import { registerSale } from '@/core/domain/usecases/saleUseCases';
-import { LocalStorageSaleRepository } from '@/infrastructure/repositories/LocalStorageSaleRepository';
-import { LocalStorageProductRepository } from '@/infrastructure/repositories/LocalStorageProductRepository';
-import { LocalStorageIngredientRepository } from '@/infrastructure/repositories/LocalStorageIngredientRepository';
-import { LocalStorageProductIngredientRepository } from '@/infrastructure/repositories/LocalStorageProductIngredientRepository';
-import { LocalStorageIngredientMovementRepository } from '@/infrastructure/repositories/LocalStorageIngredientMovementRepository';
-import { LocalStorageCashRegisterRepository } from '@/infrastructure/repositories/LocalStorageCashRegisterRepository';
-import { LocalStoragePromotionRepository } from '@/infrastructure/repositories/LocalStoragePromotionRepository';
-
-const saleRepo = new LocalStorageSaleRepository();
-const productRepo = new LocalStorageProductRepository();
-const ingredientRepo = new LocalStorageIngredientRepository();
-const recipeRepo = new LocalStorageProductIngredientRepository();
-const movementRepo = new LocalStorageIngredientMovementRepository();
-const cashRepo = new LocalStorageCashRegisterRepository();
-const promotionRepo = new LocalStoragePromotionRepository();
 
 interface CartItem {
-  product: Product;
+  product: ApiProduct;
   quantity: number;
 }
 
 export function usePosViewModel() {
   const user = useAuthStore(s => s.user);
-  const businessId = user?.id ?? '';
+  const [products, setProducts] = useState<ApiProduct[]>([]);
+  const [cashRegister, setCashRegister] = useState<ApiCashRegister | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [search, setSearch] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const products = useMemo(() => productRepo.getAll(businessId).filter(p => p.isActive), [businessId]);
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      try {
+        const [allProducts, currentRegister] = await Promise.all([
+          productApi.list(),
+          cashRegisterApi.getCurrent(),
+        ]);
+        setProducts(allProducts.filter(p => p.is_active));
+        setCashRegister(currentRegister);
+      } catch {
+        setError('Error al cargar datos');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
 
-  const filteredProducts = useMemo(() => {
-    if (!search.trim()) return products;
-    const q = search.toLowerCase();
-    return products.filter(p => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q));
-  }, [products, search]);
+  const filteredProducts = search.trim()
+    ? products.filter(p =>
+        p.name.toLowerCase().includes(search.toLowerCase()) ||
+        p.category.toLowerCase().includes(search.toLowerCase())
+      )
+    : products;
 
   const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
-  const addToCart = useCallback((product: Product) => {
+  const addToCart = useCallback((product: ApiProduct) => {
     setCart(prev => {
       const existing = prev.find(i => i.product.id === product.id);
-      if (existing) return prev.map(i => i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
+      if (existing) {
+        return prev.map(i => i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
+      }
       return [...prev, { product, quantity: 1 }];
     });
   }, []);
@@ -64,25 +71,55 @@ export function usePosViewModel() {
 
   const clearCart = useCallback(() => setCart([]), []);
 
-  const checkout = useCallback((paymentMethod: PaymentMethod) => {
+  const checkout = useCallback(async (paymentMethod: string) => {
     setError(null);
     setSuccess(null);
+      setError('No hay una caja abierta. Debe abrir la caja antes de registrar ventas.');
+      return;
+    }
+    if (cart.length === 0) {
+      setError('El carrito esta vacio.');
+      return;
+    }
     try {
-      registerSale(saleRepo, productRepo, ingredientRepo, recipeRepo, movementRepo, cashRepo, promotionRepo, {
-        businessId,
-        items: cart.map(i => ({ productId: i.product.id, quantity: i.quantity })),
-        paymentMethod,
-      });
+      const body: CreateSaleBody = {
+        cash_register_id: cashRegister.id,
+        payment_method: paymentMethod,
+        subtotal,
+        discount: 0,
+        total: subtotal,
+        items: cart.map(item => ({
+          product_id: item.product.id,
+          product_name: item.product.name,
+          quantity: item.quantity,
+          unit_price: item.product.price,
+          subtotal: item.product.price * item.quantity,
+        })),
+      };
+      await saleApi.create(body);
       setCart([]);
-      setSuccess('¡Venta registrada exitosamente!');
+      setSuccess('Venta registrada exitosamente');
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al procesar la venta');
     }
-  }, [cart, businessId]);
+  }, [cart, cashRegister, subtotal]);
 
   return {
-    cart, search, setSearch, error, setError, success,
-    filteredProducts, subtotal, addToCart, updateQuantity, removeFromCart, clearCart, checkout,
+    cart,
+    search,
+    setSearch,
+    error,
+    setError,
+    success,
+    isLoading,
+    filteredProducts,
+    subtotal,
+    cashRegister,
+    addToCart,
+    updateQuantity,
+    removeFromCart,
+    clearCart,
+    checkout,
   };
 }
