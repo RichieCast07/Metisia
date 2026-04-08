@@ -63,6 +63,7 @@ export function useProductsViewModel() {
 
   const toggleActive = useCallback(async (product: ApiProduct) => {
     try {
+      await productApi.update(product.id, { is_active: !product.is_active });
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al actualizar');

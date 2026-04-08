@@ -23,7 +23,7 @@ export default function Header({ title, subtitle, actions }: HeaderProps) {
             <Bell size={18} />
           </button>
           <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-sm shadow-md">
               {user?.name.charAt(0).toUpperCase()}
             </div>
             <span className="text-sm font-semibold text-slate-700 hidden md:block">{user?.name}</span>

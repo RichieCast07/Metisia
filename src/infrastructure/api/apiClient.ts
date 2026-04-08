@@ -1,13 +1,26 @@
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/v1';
 
+const SESSION_KEY = 'auth_token';
+
 let authToken: string | null = null;
 
 export function setAuthToken(token: string | null) {
   authToken = token;
+  if (token) {
+    sessionStorage.setItem(SESSION_KEY, token);
+  } else {
+    sessionStorage.removeItem(SESSION_KEY);
+  }
 }
 
 export function getAuthToken(): string | null {
   return authToken;
+}
+
+export function restoreAuthToken(): string | null {
+  const stored = sessionStorage.getItem(SESSION_KEY);
+  if (stored) authToken = stored;
+  return stored;
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {

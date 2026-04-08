@@ -1,78 +1,68 @@
+import { useEffect, useState } from 'react';
+import { DollarSign, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
+import { reportApi, DailyReportResponse } from '@/infrastructure/api/reportApi';
+import { ingredientApi, ApiIngredient } from '@/infrastructure/api/ingredientApi';
+import StatCard from '@/presentation/components/ui/StatCard';
+import Card from '@/presentation/components/ui/Card';
+import Header from '@/presentation/components/layout/Header';
+import { format } from 'date-fns';
 
-import Header from "../../components/layout/Header";
-import StatCard from "../../components/ui/StatCard";
-import Card from "../../components/ui/Card";
-import "./DashboardPage.css";
-
-// Demo data for KPIs, sales, and inventory
-const kpis = [
-  { label: "Ventas Hoy", value: "$2,350", icon: "💸", trend: "+8%" },
-  { label: "Órdenes", value: "124", icon: "🧾", trend: "+3%" },
-  { label: "Clientes", value: "87", icon: "👥", trend: "+5%" },
-  { label: "Inventario Bajo", value: "3", icon: "⚠️", trend: "-1" },
-];
-const salesData = [
-  { id: 1, product: "Baguette Clásica", qty: 24, total: "$480" },
-  { id: 2, product: "Baguette Pollo", qty: 18, total: "$360" },
-  { id: 3, product: "Baguette Jamón", qty: 15, total: "$300" },
-];
-const inventoryData = [
-  { id: 1, name: "Harina", stock: 12, min: 10 },
-  { id: 2, name: "Jamón", stock: 5, min: 8 },
-  { id: 3, name: "Queso", stock: 7, min: 6 },
-];
+function fmt(n: number) {
+  return `$${n.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`;
+}
 
 export default function DashboardPage() {
+  const today = format(new Date(), 'yyyy-MM-dd');
+  const [report, setReport] = useState<DailyReportResponse | null>(null);
+  const [lowStock, setLowStock] = useState<ApiIngredient[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      reportApi.daily(today),
+      ingredientApi.list(),
+    ]).then(([rep, ingredients]) => {
+      setReport(rep);
+      setLowStock(ingredients.filter(i => i.stock <= i.min_stock));
+    }).catch(() => {}).finally(() => setIsLoading(false));
+  }, [today]);
+
   return (
-    <div className="dashboard-main">
-      <Header title="Dashboard" />
-      <div className="dashboard-kpis">
-        {kpis.map((kpi) => (
-          <StatCard key={kpi.label} {...kpi} />
-        ))}
-      </div>
-      <div className="dashboard-panels">
-        <Card title="Ventas recientes">
-          <table className="dashboard-table">
-            <thead>
-              <tr>
-                <th>Producto</th>
-                <th>Cantidad</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {salesData.map((sale) => (
-                <tr key={sale.id}>
-                  <td>{sale.product}</td>
-                  <td>{sale.qty}</td>
-                  <td>{sale.total}</td>
+    <>
+      <Header title="Dashboard" subtitle="Resumen del negocio" />
+      <div className="p-8 space-y-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <StatCard title="Ventas Hoy" value={isLoading ? '...' : fmt(report?.total_ventas ?? 0)} icon={DollarSign} color="success" />
+          <StatCard title="Gastos Hoy" value={isLoading ? '...' : fmt(report?.total_gastos ?? 0)} icon={TrendingDown} color="error" />
+          <StatCard title="Ganancia" value={isLoading ? '...' : fmt(report?.ganancia ?? 0)} icon={TrendingUp} color="primary" />
+          <StatCard title="Inventario Bajo" value={isLoading ? '...' : String(lowStock.length)} icon={AlertTriangle} color="warning" />
+        </div>
+
+        <Card title="Ingredientes con stock bajo">
+          {lowStock.length === 0 ? (
+            <p className="text-sm text-slate-500">Todo el inventario está en niveles normales.</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-100">
+                  <th className="text-left py-2 font-medium text-slate-500">Ingrediente</th>
+                  <th className="text-left py-2 font-medium text-slate-500">Stock</th>
+                  <th className="text-left py-2 font-medium text-slate-500">Mínimo</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </Card>
-        <Card title="Inventario bajo">
-          <table className="dashboard-table">
-            <thead>
-              <tr>
-                <th>Ingrediente</th>
-                <th>Stock</th>
-                <th>Mínimo</th>
-              </tr>
-            </thead>
-            <tbody>
-              {inventoryData.map((item) => (
-                <tr key={item.id}>
-                  <td>{item.name}</td>
-                  <td>{item.stock}</td>
-                  <td>{item.min}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {lowStock.map(i => (
+                  <tr key={i.id} className="border-b border-slate-50 last:border-0">
+                    <td className="py-2 font-medium text-slate-900">{i.name}</td>
+                    <td className="py-2 text-red-500 font-semibold">{i.stock} {i.unit}</td>
+                    <td className="py-2 text-slate-500">{i.min_stock} {i.unit}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </Card>
       </div>
-    </div>
+    </>
   );
 }

@@ -10,7 +10,8 @@ import Select from '@/presentation/components/ui/Select';
 import ConfirmDialog from '@/presentation/components/ui/ConfirmDialog';
 import EmptyState from '@/presentation/components/ui/EmptyState';
 import { useIngredientsViewModel } from '@/presentation/viewmodels/useIngredientsViewModel';
-import { Ingredient, IngredientUnit } from '@/core/domain/entities/Ingredient';
+import { ApiIngredient } from '@/infrastructure/api/ingredientApi';
+import { IngredientUnit } from '@/core/domain/entities/Ingredient';
 import { useState, FormEvent } from 'react';
 
 const unitOptions = Object.values(IngredientUnit).map(u => ({ value: u, label: u }));
@@ -32,13 +33,13 @@ export default function IngredientsPage() {
             data={vm.ingredients}
             keyExtractor={i => i.id}
             columns={[
-              { key: 'name', header: 'Nombre', render: (i: Ingredient) => <span className="font-medium">{i.name}</span> },
-              { key: 'stock', header: 'Stock', render: (i: Ingredient) => (
-                <Badge variant={i.stock <= i.minStock ? 'warning' : 'success'}>{i.stock} {i.unit}</Badge>
+              { key: 'name', header: 'Nombre', render: (i: ApiIngredient) => <span className="font-medium">{i.name}</span> },
+              { key: 'stock', header: 'Stock', render: (i: ApiIngredient) => (
+                <Badge variant={i.stock <= i.min_stock ? 'warning' : 'success'}>{i.stock} {i.unit}</Badge>
               )},
-              { key: 'minStock', header: 'Mín.', render: (i: Ingredient) => `${i.minStock} ${i.unit}` },
-              { key: 'cost', header: 'Costo/u', render: (i: Ingredient) => `$${i.unitCost.toFixed(2)}` },
-              { key: 'actions', header: '', render: (i: Ingredient) => (
+              { key: 'min_stock', header: 'Mín.', render: (i: ApiIngredient) => `${i.min_stock} ${i.unit}` },
+              { key: 'unit_cost', header: 'Costo/u', render: (i: ApiIngredient) => `$${i.unit_cost.toFixed(2)}` },
+              { key: 'actions', header: '', render: (i: ApiIngredient) => (
                 <div className="flex items-center gap-1">
                   <button onClick={() => vm.setShowAdjust(i)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors" title="Ajustar stock"><ArrowUpDown size={15} /></button>
                   <button onClick={() => vm.openEdit(i)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"><Pencil size={15} /></button>
@@ -50,12 +51,8 @@ export default function IngredientsPage() {
         )}
       </div>
 
-      {/* Create/Edit Modal */}
       <IngredientFormModal isOpen={vm.showForm} onClose={vm.closeForm} onSave={vm.save} editing={vm.editing} />
-
-      {/* Adjust Stock Modal */}
       <AdjustStockModal ingredient={vm.showAdjust} onClose={() => vm.setShowAdjust(null)} onAdjust={vm.doAdjust} />
-
       <ConfirmDialog isOpen={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={() => { if (deleteId) vm.remove(deleteId); }} title="Eliminar insumo" message="¿Estás seguro de eliminar este insumo?" />
     </>
   );
@@ -63,31 +60,39 @@ export default function IngredientsPage() {
 
 function IngredientFormModal({ isOpen, onClose, onSave, editing }: {
   isOpen: boolean; onClose: () => void;
-  onSave: (data: { name: string; unit: IngredientUnit; stock: number; minStock: number; unitCost: number }) => void;
-  editing: Ingredient | null;
+  onSave: (data: Omit<ApiIngredient, 'id' | 'business_id' | 'updated_at'>) => void;
+  editing: ApiIngredient | null;
 }) {
   const [name, setName] = useState(editing?.name ?? '');
-  const [unit, setUnit] = useState<IngredientUnit>(editing?.unit ?? IngredientUnit.KG);
+  const [unit, setUnit] = useState<string>(editing?.unit ?? IngredientUnit.KG);
   const [stock, setStock] = useState(editing?.stock.toString() ?? '0');
-  const [minStock, setMinStock] = useState(editing?.minStock.toString() ?? '0');
-  const [unitCost, setUnitCost] = useState(editing?.unitCost.toString() ?? '0');
+  const [minStock, setMinStock] = useState(editing?.min_stock.toString() ?? '0');
+  const [unitCost, setUnitCost] = useState(editing?.unit_cost.toString() ?? '0');
 
   if (isOpen && editing && name !== editing.name) {
-    setName(editing.name); setUnit(editing.unit); setStock(editing.stock.toString());
-    setMinStock(editing.minStock.toString()); setUnitCost(editing.unitCost.toString());
+    setName(editing.name);
+    setUnit(editing.unit);
+    setStock(editing.stock.toString());
+    setMinStock(editing.min_stock.toString());
+    setUnitCost(editing.unit_cost.toString());
   }
-  if (isOpen && !editing && name === '' && stock === '0') { /* defaults ok */ }
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    onSave({ name, unit, stock: parseFloat(stock) || 0, minStock: parseFloat(minStock) || 0, unitCost: parseFloat(unitCost) || 0 });
+    onSave({
+      name,
+      unit,
+      stock: parseFloat(stock) || 0,
+      min_stock: parseFloat(minStock) || 0,
+      unit_cost: parseFloat(unitCost) || 0,
+    });
   };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={editing ? 'Editar Insumo' : 'Nuevo Insumo'}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input label="Nombre" value={name} onChange={e => setName(e.target.value)} required />
-        <Select label="Unidad" options={unitOptions} value={unit} onChange={e => setUnit(e.target.value as IngredientUnit)} />
+        <Select label="Unidad" options={unitOptions} value={unit} onChange={e => setUnit(e.target.value)} />
         <div className="grid grid-cols-3 gap-4">
           <Input label="Stock" type="number" step="0.01" min="0" value={stock} onChange={e => setStock(e.target.value)} />
           <Input label="Stock mínimo" type="number" step="0.01" min="0" value={minStock} onChange={e => setMinStock(e.target.value)} />
@@ -103,7 +108,7 @@ function IngredientFormModal({ isOpen, onClose, onSave, editing }: {
 }
 
 function AdjustStockModal({ ingredient, onClose, onAdjust }: {
-  ingredient: Ingredient | null; onClose: () => void;
+  ingredient: ApiIngredient | null; onClose: () => void;
   onAdjust: (id: string, qty: number, reason: string) => void;
 }) {
   const [quantity, setQuantity] = useState('');

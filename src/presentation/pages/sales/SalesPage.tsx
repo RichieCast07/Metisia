@@ -1,32 +1,32 @@
-import { useMemo, useState } from 'react';
-import { useAuthStore } from '@/infrastructure/auth/useAuthStore';
+import { useEffect, useState, useMemo } from 'react';
 import Header from '@/presentation/components/layout/Header';
 import DataTable from '@/presentation/components/ui/DataTable';
 import Badge from '@/presentation/components/ui/Badge';
 import SearchInput from '@/presentation/components/ui/SearchInput';
 import EmptyState from '@/presentation/components/ui/EmptyState';
-import { LocalStorageSaleRepository } from '@/infrastructure/repositories/LocalStorageSaleRepository';
-import { Sale } from '@/core/domain/entities/Sale';
+import { saleApi, ApiSale } from '@/infrastructure/api/saleApi';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-
-const repo = new LocalStorageSaleRepository();
 
 function fmt(n: number) {
   return `$${n.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`;
 }
 
 export default function SalesPage() {
-  const user = useAuthStore(s => s.user);
-  const businessId = user?.id ?? '';
+  const [sales, setSales] = useState<ApiSale[]>([]);
   const [search, setSearch] = useState('');
 
-  const sales = useMemo(() => repo.getAll(businessId).reverse(), [businessId]);
+  useEffect(() => {
+    saleApi.list().then(data => setSales(data.slice().reverse())).catch(() => {});
+  }, []);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return sales;
     const q = search.toLowerCase();
-    return sales.filter(s => s.items.some(i => i.productName.toLowerCase().includes(q)) || s.paymentMethod.includes(q));
+    return sales.filter(s =>
+      s.items.some(i => i.product_name.toLowerCase().includes(q)) ||
+      s.payment_method.toLowerCase().includes(q)
+    );
   }, [sales, search]);
 
   return (
@@ -41,14 +41,14 @@ export default function SalesPage() {
             data={filtered}
             keyExtractor={s => s.id}
             columns={[
-              { key: 'date', header: 'Fecha', render: (s: Sale) => format(new Date(s.createdAt), "dd/MM/yyyy HH:mm", { locale: es }) },
-              { key: 'items', header: 'Productos', render: (s: Sale) => (
-                <div className="max-w-xs truncate">{s.items.map(i => `${i.productName} x${i.quantity}`).join(', ')}</div>
+              { key: 'date', header: 'Fecha', render: (s: ApiSale) => format(new Date(s.created_at), 'dd/MM/yyyy HH:mm', { locale: es }) },
+              { key: 'items', header: 'Productos', render: (s: ApiSale) => (
+                <div className="max-w-xs truncate">{s.items.map(i => `${i.product_name} x${i.quantity}`).join(', ')}</div>
               )},
-              { key: 'subtotal', header: 'Subtotal', render: (s: Sale) => fmt(s.subtotal) },
-              { key: 'discount', header: 'Descuento', render: (s: Sale) => s.discount > 0 ? <span className="text-red-500">-{fmt(s.discount)}</span> : '-' },
-              { key: 'total', header: 'Total', render: (s: Sale) => <span className="font-semibold">{fmt(s.total)}</span> },
-              { key: 'payment', header: 'Pago', render: (s: Sale) => <Badge variant="info">{s.paymentMethod}</Badge> },
+              { key: 'subtotal', header: 'Subtotal', render: (s: ApiSale) => fmt(s.subtotal) },
+              { key: 'discount', header: 'Descuento', render: (s: ApiSale) => s.discount > 0 ? <span className="text-red-500">-{fmt(s.discount)}</span> : '-' },
+              { key: 'total', header: 'Total', render: (s: ApiSale) => <span className="font-semibold">{fmt(s.total)}</span> },
+              { key: 'payment', header: 'Pago', render: (s: ApiSale) => <Badge variant="info">{s.payment_method}</Badge> },
             ]}
           />
         )}

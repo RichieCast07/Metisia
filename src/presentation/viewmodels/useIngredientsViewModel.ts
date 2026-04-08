@@ -6,6 +6,7 @@ export function useIngredientsViewModel() {
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<ApiIngredient | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [showAdjust, setShowAdjust] = useState<ApiIngredient | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,12 +59,26 @@ export function useIngredientsViewModel() {
   const openEdit = useCallback((i: ApiIngredient) => { setEditing(i); setShowForm(true); }, []);
   const closeForm = useCallback(() => { setShowForm(false); setEditing(null); }, []);
 
+  const doAdjust = useCallback(async (id: string, qty: number, _reason: string) => {
+    const target = ingredients.find(i => i.id === id);
+    if (!target) return;
+    try {
+      await ingredientApi.update(id, { stock: target.stock + qty });
+      setShowAdjust(null);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al ajustar stock');
+    }
+  }, [ingredients, load]);
+
   return {
     ingredients: filtered,
     search,
     setSearch,
     editing,
     showForm,
+    showAdjust,
+    setShowAdjust,
     isLoading,
     error,
     save,
@@ -71,5 +86,6 @@ export function useIngredientsViewModel() {
     openCreate,
     openEdit,
     closeForm,
+    doAdjust,
   };
 }

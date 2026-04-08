@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { authApi } from '@/infrastructure/api/authApi';
-import { setAuthToken } from '@/infrastructure/api/apiClient';
+import { setAuthToken, restoreAuthToken } from '@/infrastructure/api/apiClient';
 
 interface AuthUser {
   id: string;
@@ -71,8 +71,14 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   restoreSession: async () => {
-    // No persistent token storage - session ends on page refresh by design.
-    // If a token were persisted (e.g. sessionStorage), it would be rehydrated here.
+    const token = restoreAuthToken();
+    if (!token) return;
+    try {
+      const user = await authApi.me();
+      set({ user, isAuthenticated: true });
+    } catch {
+      setAuthToken(null);
+    }
   },
 
   clearError: () => set({ error: null }),

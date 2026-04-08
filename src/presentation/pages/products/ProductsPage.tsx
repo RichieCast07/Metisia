@@ -9,7 +9,7 @@ import Input from '@/presentation/components/ui/Input';
 import ConfirmDialog from '@/presentation/components/ui/ConfirmDialog';
 import EmptyState from '@/presentation/components/ui/EmptyState';
 import { useProductsViewModel } from '@/presentation/viewmodels/useProductsViewModel';
-import { Product } from '@/core/domain/entities/Product';
+import { ApiProduct } from '@/infrastructure/api/productApi';
 import { useState, FormEvent } from 'react';
 
 function fmt(n: number) {
@@ -33,12 +33,11 @@ export default function ProductsPage() {
             data={vm.products}
             keyExtractor={p => p.id}
             columns={[
-              { key: 'name', header: 'Nombre', render: (p: Product) => <span className="font-medium">{p.name}</span> },
-              { key: 'category', header: 'Categoría', render: (p: Product) => <Badge>{p.category}</Badge> },
-              { key: 'price', header: 'Precio', render: (p: Product) => fmt(p.price) },
-
-              { key: 'status', header: 'Estado', render: (p: Product) => <Badge variant={p.isActive ? 'success' : 'error'}>{p.isActive ? 'Activo' : 'Inactivo'}</Badge> },
-              { key: 'actions', header: '', render: (p: Product) => (
+              { key: 'name', header: 'Nombre', render: (p: ApiProduct) => <span className="font-medium">{p.name}</span> },
+              { key: 'category', header: 'Categoría', render: (p: ApiProduct) => <Badge>{p.category}</Badge> },
+              { key: 'price', header: 'Precio', render: (p: ApiProduct) => fmt(p.price) },
+              { key: 'status', header: 'Estado', render: (p: ApiProduct) => <Badge variant={p.is_active ? 'success' : 'error'}>{p.is_active ? 'Activo' : 'Inactivo'}</Badge> },
+              { key: 'actions', header: '', render: (p: ApiProduct) => (
                 <div className="flex items-center gap-1">
                   <button onClick={() => vm.toggleActive(p)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors" title="Activar/Desactivar"><Power size={15} /></button>
                   <button onClick={() => vm.openEdit(p)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"><Pencil size={15} /></button>
@@ -50,10 +49,8 @@ export default function ProductsPage() {
         )}
       </div>
 
-      {/* Form Modal */}
       <ProductFormModal isOpen={vm.showForm} onClose={vm.closeForm} onSave={vm.save} editing={vm.editing} />
 
-      {/* Delete Confirm */}
       <ConfirmDialog
         isOpen={!!deleteId}
         onClose={() => setDeleteId(null)}
@@ -67,22 +64,25 @@ export default function ProductsPage() {
 
 function ProductFormModal({ isOpen, onClose, onSave, editing }: {
   isOpen: boolean; onClose: () => void;
-  onSave: (data: { name: string; category: string; price: number; isActive: boolean }) => void;
-  editing: Product | null;
+  onSave: (data: { name: string; category: string; price: number; is_active: boolean }) => void;
+  editing: ApiProduct | null;
 }) {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
   const [price, setPrice] = useState('');
 
-  const reset = () => { setName(editing?.name ?? ''); setCategory(editing?.category ?? ''); setPrice(editing?.price.toString() ?? ''); };
+  const reset = () => {
+    setName(editing?.name ?? '');
+    setCategory(editing?.category ?? '');
+    setPrice(editing?.price.toString() ?? '');
+  };
 
-  // Reset form when modal opens
   if (isOpen && name === '' && !editing) reset();
   if (isOpen && editing && name !== editing.name) reset();
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    onSave({ name, category, price: parseFloat(price) || 0, isActive: editing?.isActive ?? true });
+    onSave({ name, category, price: parseFloat(price) || 0, is_active: editing?.is_active ?? true });
   };
 
   return (

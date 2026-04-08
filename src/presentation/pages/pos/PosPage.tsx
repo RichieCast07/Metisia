@@ -30,12 +30,12 @@ export default function PosPage() {
                 <button
                   key={p.id}
                   onClick={() => vm.addToCart(p)}
-                  className="bg-white border border-slate-200 rounded-2xl p-5 text-left hover:border-blue-300 hover:shadow-elevated transition-all duration-200 cursor-pointer group shadow-card"
+                  className="bg-white border border-slate-200 rounded-2xl p-5 text-left hover:border-primary/40 hover:shadow-elevated transition-all duration-200 cursor-pointer group shadow-card"
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <p className="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors leading-tight">{p.name}</p>
-                    <div className="p-1.5 rounded-xl bg-blue-50 ring-1 ring-blue-100 group-hover:bg-blue-100 transition-colors">
-                      <Plus size={14} className="text-blue-600" />
+                    <p className="text-sm font-bold text-slate-800 group-hover:text-primary transition-colors leading-tight">{p.name}</p>
+                    <div className="p-1.5 rounded-xl bg-primary-light ring-1 ring-primary/20 group-hover:bg-primary/15 transition-colors">
+                      <Plus size={14} className="text-primary" />
                     </div>
                   </div>
                   <Badge variant="default">{p.category}</Badge>
@@ -50,8 +50,8 @@ export default function PosPage() {
         <div className="w-full lg:w-[400px] border-l border-slate-200 bg-white flex flex-col">
           <div className="px-6 py-5 border-b border-slate-200">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-50 rounded-xl ring-1 ring-blue-100">
-                <ShoppingCart size={18} className="text-blue-600" />
+              <div className="p-2 bg-primary-light rounded-xl ring-1 ring-primary/20">
+                <ShoppingCart size={18} className="text-primary" />
               </div>
               <h2 className="text-base font-bold text-slate-900">Carrito ({vm.cart.length})</h2>
             </div>

@@ -74,6 +74,7 @@ export function usePosViewModel() {
   const checkout = useCallback(async (paymentMethod: string) => {
     setError(null);
     setSuccess(null);
+    if (!cashRegister) {
       setError('No hay una caja abierta. Debe abrir la caja antes de registrar ventas.');
       return;
     }

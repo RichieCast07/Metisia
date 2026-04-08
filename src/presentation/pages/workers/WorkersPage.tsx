@@ -1,5 +1,4 @@
-import { useState, useCallback, useMemo, FormEvent } from 'react';
-import { useAuthStore } from '@/infrastructure/auth/useAuthStore';
+import { useState, useCallback, useEffect, FormEvent } from 'react';
 import { Plus, Power, DollarSign } from 'lucide-react';
 import Header from '@/presentation/components/layout/Header';
 import Button from '@/presentation/components/ui/Button';
@@ -8,39 +7,43 @@ import Badge from '@/presentation/components/ui/Badge';
 import Modal from '@/presentation/components/ui/Modal';
 import Input from '@/presentation/components/ui/Input';
 import EmptyState from '@/presentation/components/ui/EmptyState';
-import { Worker } from '@/core/domain/entities/Worker';
-import { createWorker, toggleWorkerStatus, registerWorkerPayment } from '@/core/domain/usecases/workerUseCases';
-import { LocalStorageWorkerRepository, LocalStorageWorkerPaymentRepository } from '@/infrastructure/repositories/LocalStorageWorkerRepository';
-import { WorkerPaymentType } from '@/core/domain/entities/Worker';
-
-const workerRepo = new LocalStorageWorkerRepository();
-const paymentRepo = new LocalStorageWorkerPaymentRepository();
+import { workerApi, ApiWorker } from '@/infrastructure/api/workerApi';
 
 export default function WorkersPage() {
-  const user = useAuthStore(s => s.user);
-  const businessId = user?.id ?? '';
+  const [workers, setWorkers] = useState<ApiWorker[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [showPayment, setShowPayment] = useState<Worker | null>(null);
-  const [refresh, setRefresh] = useState(0);
+  const [showPayment, setShowPayment] = useState<ApiWorker | null>(null);
 
-  const workers = useMemo(() => workerRepo.getAll(businessId), [businessId, refresh]);
-
-  const handleCreate = useCallback((data: { name: string; role: string; dailyRate: number }) => {
-    createWorker(workerRepo, { ...data, businessId, isActive: true });
-    setShowForm(false);
-    setRefresh(r => r + 1);
-  }, [businessId]);
-
-  const handleToggle = useCallback((id: string) => {
-    toggleWorkerStatus(workerRepo, id);
-    setRefresh(r => r + 1);
+  const load = useCallback(async () => {
+    try {
+      const data = await workerApi.list();
+      setWorkers(data);
+    } catch { /* silent */ }
   }, []);
 
-  const handlePayment = useCallback((workerId: string, amount: number, notes: string) => {
-    registerWorkerPayment(paymentRepo, { businessId, workerId, amount, notes, type: WorkerPaymentType.MANUAL, paidAt: new Date() });
-    setShowPayment(null);
-    setRefresh(r => r + 1);
-  }, [businessId]);
+  useEffect(() => { load(); }, [load]);
+
+  const handleCreate = useCallback(async (data: { name: string; role: string; daily_rate: number }) => {
+    try {
+      await workerApi.create({ ...data, is_active: true, hired_at: new Date().toISOString().split('T')[0] });
+      setShowForm(false);
+      await load();
+    } catch { /* silent */ }
+  }, [load]);
+
+  const handleToggle = useCallback(async (id: string) => {
+    try {
+      await workerApi.toggle(id);
+      await load();
+    } catch { /* silent */ }
+  }, [load]);
+
+  const handlePayment = useCallback(async (workerId: string, amount: number, notes: string) => {
+    try {
+      await workerApi.registerPayment(workerId, { amount, notes, paid_at: new Date().toISOString() });
+      setShowPayment(null);
+    } catch { /* silent */ }
+  }, []);
 
   return (
     <>
@@ -53,11 +56,11 @@ export default function WorkersPage() {
             data={workers}
             keyExtractor={w => w.id}
             columns={[
-              { key: 'name', header: 'Nombre', render: (w: Worker) => <span className="font-medium">{w.name}</span> },
-              { key: 'role', header: 'Rol', render: (w: Worker) => <Badge>{w.role}</Badge> },
-              { key: 'dailyRate', header: 'Tarifa Diaria', render: (w: Worker) => w.dailyRate ? `$${w.dailyRate}` : '—' },
-              { key: 'status', header: 'Estado', render: (w: Worker) => <Badge variant={w.isActive ? 'success' : 'error'}>{w.isActive ? 'Activo' : 'Inactivo'}</Badge> },
-              { key: 'actions', header: '', render: (w: Worker) => (
+              { key: 'name', header: 'Nombre', render: (w: ApiWorker) => <span className="font-medium">{w.name}</span> },
+              { key: 'role', header: 'Rol', render: (w: ApiWorker) => <Badge>{w.role}</Badge> },
+              { key: 'daily_rate', header: 'Tarifa Diaria', render: (w: ApiWorker) => w.daily_rate ? `$${w.daily_rate}` : '—' },
+              { key: 'status', header: 'Estado', render: (w: ApiWorker) => <Badge variant={w.is_active ? 'success' : 'error'}>{w.is_active ? 'Activo' : 'Inactivo'}</Badge> },
+              { key: 'actions', header: '', render: (w: ApiWorker) => (
                 <div className="flex items-center gap-1">
                   <button onClick={() => setShowPayment(w)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors" title="Registrar pago"><DollarSign size={15} /></button>
                   <button onClick={() => handleToggle(w.id)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"><Power size={15} /></button>
@@ -76,7 +79,7 @@ export default function WorkersPage() {
 
 function WorkerFormModal({ isOpen, onClose, onSave }: {
   isOpen: boolean; onClose: () => void;
-  onSave: (data: { name: string; role: string; dailyRate: number }) => void;
+  onSave: (data: { name: string; role: string; daily_rate: number }) => void;
 }) {
   const [name, setName] = useState('');
   const [role, setRole] = useState('');
@@ -84,7 +87,7 @@ function WorkerFormModal({ isOpen, onClose, onSave }: {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    onSave({ name, role, dailyRate: parseFloat(rate) || 0 });
+    onSave({ name, role, daily_rate: parseFloat(rate) || 0 });
     setName(''); setRole(''); setRate('0');
   };
 
@@ -104,7 +107,7 @@ function WorkerFormModal({ isOpen, onClose, onSave }: {
 }
 
 function PaymentModal({ worker, onClose, onSave }: {
-  worker: Worker | null; onClose: () => void;
+  worker: ApiWorker | null; onClose: () => void;
   onSave: (workerId: string, amount: number, notes: string) => void;
 }) {
   const [amount, setAmount] = useState('');
@@ -119,13 +122,13 @@ function PaymentModal({ worker, onClose, onSave }: {
   };
 
   return (
-    <Modal isOpen onClose={onClose} title={`Pago a ${worker.name}`} size="sm">
+    <Modal isOpen onClose={onClose} title={`Pago: ${worker.name}`}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input label="Monto" type="number" step="0.01" min="0" value={amount} onChange={e => setAmount(e.target.value)} required />
-        <Input label="Notas" value={notes} onChange={e => setNotes(e.target.value)} required placeholder="Ej: Sueldo semanal" />
+        <Input label="Notas" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Opcional" />
         <div className="flex justify-end gap-3 pt-2">
           <Button variant="ghost" type="button" onClick={onClose}>Cancelar</Button>
-          <Button type="submit">Registrar Pago</Button>
+          <Button type="submit">Registrar</Button>
         </div>
       </form>
     </Modal>

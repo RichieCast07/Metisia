@@ -35,7 +35,7 @@ export default function DataTable<T>({ columns, data, keyExtractor, onRowClick, 
             {data.map(item => (
               <tr
                 key={keyExtractor(item)}
-                className={`transition-colors ${onRowClick ? 'hover:bg-blue-50 cursor-pointer' : 'hover:bg-slate-50'}`}
+                className={`transition-colors ${onRowClick ? 'hover:bg-primary-light cursor-pointer' : 'hover:bg-slate-50'}`}
                 onClick={() => onRowClick?.(item)}
               >
                 {columns.map(col => (
